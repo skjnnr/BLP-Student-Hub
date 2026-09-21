@@ -410,44 +410,14 @@ h1, h2, h3, p { margin-top: 0; }
 }
 
 
-/* Realtime online members */
-.online-member-list {
-  display: grid;
-  gap: 7px;
-}
-
-.online-member {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  min-width: 0;
-  padding: 2px 0;
-}
-
+/* Supabase Realtime Presence: online member rows only */
+.online-member-list { display: grid; gap: 7px; }
+.online-member { display: flex; align-items: center; gap: 9px; min-width: 0; padding: 2px 0; }
 .online-member-dot {
-  width: 9px;
-  height: 9px;
-  flex: 0 0 9px;
-  border-radius: 50%;
-  background: #22c55e;
-  box-shadow: 0 0 9px rgba(34, 197, 94, .65);
+  width: 9px; height: 9px; flex: 0 0 9px; border-radius: 50%;
+  background: #22c55e; box-shadow: 0 0 9px rgba(34, 197, 94, .65);
 }
-
 .online-member-email {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: #e5e7eb;
-  font-size: 13px;
-}
-
-
-/* Role-switch safety: JavaScript explicitly reveals these only after role verification. */
-#teacherDashboard[style*="display: none"],
-#teacherControls[style*="display: none"],
-#adminDashboard[style*="display: none"],
-#adminControls[style*="display: none"],
-#userList[style*="display: none"] {
-  display: none !important;
+  min-width: 0; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; color: #e5e7eb; font-size: 13px;
 }

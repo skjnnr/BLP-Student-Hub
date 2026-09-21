@@ -429,6 +429,13 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
     hide($("auth"));
     show($("app"));
 
+    // Users management is ADMIN ONLY.
+    // This is independent from Realtime Presence.
+    if ($("usersPanel")) {
+      $("usersPanel").style.display =
+        currentProfile?.role === "admin" ? "" : "none";
+    }
+
     const displayEmail =
       currentUser?.email ||
       currentProfile?.email ||
@@ -464,7 +471,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
 
     // Student
     if (currentProfile?.role === "student") {
-hide($("teacherDashboard"));
+      hide($("teacherDashboard"));
       hide($("teacherControls"));
       hide($("adminDashboard"));
       hide($("adminControls"));
@@ -472,7 +479,7 @@ hide($("teacherDashboard"));
 
     // Teacher
     if (currentProfile?.role === "teacher") {
-show($("teacherDashboard"));
+      show($("teacherDashboard"));
       show($("teacherControls"));
       hide($("adminDashboard"));
       hide($("adminControls"));
@@ -480,115 +487,92 @@ show($("teacherDashboard"));
 
     // Admin
     if (currentProfile?.role === "admin") {
-show($("teacherDashboard"));
+      show($("teacherDashboard"));
       show($("teacherControls"));
       show($("adminDashboard"));
       show($("adminControls"));
     }
 
-    applyRoleUI();
     await startPresence();
     await loadAnnouncements();
     await loadLinks();
 
-    if (
-      currentProfile?.role === "teacher" ||
-      currentProfile?.role === "admin"
-    ) {
+    if (currentProfile?.role === "admin") {
       await loadUsers();
+    } else if ($("userList")) {
+      $("userList").innerHTML = "";
     }
   }
 
 
   // ============================================================
-  // REALTIME ONLINE MEMBERS
+  // REALTIME PRESENCE (ONLINE MEMBERS ONLY)
+  // This code does not control teacher/admin permissions.
   // ============================================================
 
   function renderOnlineMembers(state = {}) {
-    const membersById = new Map();
+    const unique = new Map();
 
-    Object.values(state).forEach((presences) => {
-      (presences || []).forEach((presence) => {
-        if (!presence?.user_id) return;
-        membersById.set(presence.user_id, presence);
+    Object.values(state).forEach((entries) => {
+      (entries || []).forEach((entry) => {
+        if (entry?.user_id) unique.set(entry.user_id, entry);
       });
     });
 
-    const members = [...membersById.values()].filter(
-      (member) =>
-        member.email &&
-        ["admin", "teacher", "student"].includes(member.role)
+    const members = [...unique.values()].filter(
+      (m) => m.email && ["admin", "teacher", "student"].includes(m.role)
     );
 
-    if ($("userCount")) {
-      $("userCount").textContent = members.length;
-    }
+    if ($("userCount")) $("userCount").textContent = String(members.length);
 
     const groups = {
-      admin: $("onlineAdmins"),
-      teacher: $("onlineTeachers"),
-      student: $("onlineStudents")
+      admin: [$("onlineAdmins"), "No admins online"],
+      teacher: [$("onlineTeachers"), "No teachers online"],
+      student: [$("onlineStudents"), "No students online"]
     };
 
-    const emptyText = {
-      admin: "No admins online",
-      teacher: "No teachers online",
-      student: "No students online"
-    };
-
-    Object.entries(groups).forEach(([role, container]) => {
-      if (!container) return;
-
+    for (const [role, [container, emptyText]] of Object.entries(groups)) {
+      if (!container) continue;
       container.innerHTML = "";
 
-      const roleMembers = members
-        .filter((member) => member.role === role)
+      const group = members
+        .filter((m) => m.role === role)
         .sort((a, b) => a.email.localeCompare(b.email));
 
-      if (roleMembers.length === 0) {
+      if (!group.length) {
         const empty = document.createElement("div");
         empty.className = "member-placeholder";
-        empty.textContent = emptyText[role];
+        empty.textContent = emptyText;
         container.appendChild(empty);
-        return;
+        continue;
       }
 
-      roleMembers.forEach((member) => {
+      group.forEach((member) => {
         const row = document.createElement("div");
         row.className = "online-member";
 
         const dot = document.createElement("span");
         dot.className = "online-member-dot";
 
-        const email = document.createElement("span");
-        email.className = "online-member-email";
-        email.textContent = member.email;
+        const label = document.createElement("span");
+        label.className = "online-member-email";
+        label.textContent = member.email;
 
-        row.append(dot, email);
+        row.append(dot, label);
         container.appendChild(row);
       });
-    });
+    }
   }
 
   async function stopPresence() {
-    if (!presenceChannel) {
-      renderOnlineMembers({});
-      return;
-    }
-
-    try {
-      await presenceChannel.untrack();
-    } catch (error) {
-      console.warn("Presence untrack warning:", error);
-    }
-
-    try {
-      await supabaseClient.removeChannel(presenceChannel);
-    } catch (error) {
-      console.warn("Presence channel cleanup warning:", error);
-    }
-
+    const channel = presenceChannel;
     presenceChannel = null;
+
+    if (channel) {
+      try { await channel.untrack(); } catch (_) {}
+      try { await supabaseClient.removeChannel(channel); } catch (_) {}
+    }
+
     renderOnlineMembers({});
   }
 
@@ -597,35 +581,27 @@ show($("teacherDashboard"));
 
     await stopPresence();
 
-    presenceChannel = supabaseClient.channel("blp-online-members", {
-      config: {
-        presence: {
-          key: currentUser.id
-        }
+    const channel = supabaseClient.channel("blp-online-members", {
+      config: { presence: { key: currentUser.id } }
+    });
+
+    presenceChannel = channel;
+
+    channel.on("presence", { event: "sync" }, () => {
+      if (presenceChannel === channel) {
+        renderOnlineMembers(channel.presenceState());
       }
     });
 
-    presenceChannel.on("presence", { event: "sync" }, () => {
-      if (!presenceChannel) return;
-      renderOnlineMembers(presenceChannel.presenceState());
-    });
+    channel.subscribe(async (status) => {
+      if (status !== "SUBSCRIBED" || presenceChannel !== channel) return;
 
-    presenceChannel.subscribe(async (status) => {
-      if (status !== "SUBSCRIBED" || !presenceChannel) return;
-
-      const result = await presenceChannel.track({
+      await channel.track({
         user_id: currentUser.id,
-        email:
-          currentUser.email ||
-          currentProfile.email ||
-          "Unknown user",
+        email: currentUser.email || currentProfile.email || "Unknown user",
         role: currentProfile.role,
         online_at: new Date().toISOString()
       });
-
-      if (result !== "ok") {
-        console.error("Could not track online presence:", result);
-      }
     });
   }
 
@@ -635,7 +611,8 @@ show($("teacherDashboard"));
 
   function setupLogout() {
     $("logout")?.addEventListener("click", async () => {
-      resetRoleProtectedUI();
+      if ($("usersPanel")) $("usersPanel").style.display = "none";
+      if ($("userList")) $("userList").innerHTML = "";
       await stopPresence();
       await supabaseClient.auth.signOut();
 
@@ -1212,7 +1189,8 @@ show($("teacherDashboard"));
     supabaseClient.auth.onAuthStateChange(
       async (event, session) => {
         if (event === "SIGNED_OUT") {
-          resetRoleProtectedUI();
+          if ($("usersPanel")) $("usersPanel").style.display = "none";
+          if ($("userList")) $("userList").innerHTML = "";
           await stopPresence();
           currentUser = null;
           currentProfile = null;
@@ -1230,58 +1208,7 @@ show($("teacherDashboard"));
   // START
   // ============================================================
 
-  
-  // ============================================================
-  // ROLE-PROTECTED UI RESET
-  // ============================================================
-
-
-  function applyRoleUI() {
-    const role = currentProfile?.role;
-
-    hide($("usersPanel"));
-    hide($("teacherDashboard"));
-    hide($("teacherControls"));
-    hide($("adminDashboard"));
-    hide($("adminControls"));
-
-    if (role === "admin") {
-      show($("usersPanel"));
-      show($("teacherDashboard"));
-      show($("teacherControls"));
-      show($("adminDashboard"));
-      show($("adminControls"));
-    } else if (role === "teacher") {
-      show($("teacherDashboard"));
-      show($("teacherControls"));
-    }
-  }
-
-  function resetRoleProtectedUI() {
-    // Always hide privileged UI before a new account/profile is loaded.
-    const protectedIds = [
-      "usersPanel",
-      "userList",
-      "teacherDashboard",
-      "teacherControls",
-      "adminDashboard",
-      "adminControls"
-    ];
-
-    protectedIds.forEach((id) => {
-      const el = $(id);
-      if (el) el.style.display = "none";
-    });
-
-    // Clear privileged content left over from the previous account.
-    if ($("userList")) $("userList").innerHTML = "";
-
-    // Reset role-dependent identity text until the new profile is verified.
-    if ($("roleBadge")) $("roleBadge").textContent = "";
-  }
-
-async function startApp() {
-    resetRoleProtectedUI();
+  async function startApp() {
     console.log("BLP Student Hub starting...");
 
     setupAuthButtons();

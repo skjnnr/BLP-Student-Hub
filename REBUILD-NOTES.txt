@@ -1,0 +1,13 @@
+This build was rebuilt from BLP-Student-Hub-Email-Password-Only.zip,
+the version from before Realtime Presence was added.
+
+Permissions:
+- Admin: Users management panel visible.
+- Teacher: Users management panel hidden.
+- Student: Users management panel hidden.
+- Existing teacher posting controls remain unchanged.
+
+Realtime Presence:
+- Only manages the Online Members list.
+- Does not show/hide admin or teacher management panels.
+- Displays email + role grouping and updates on join/leave.
