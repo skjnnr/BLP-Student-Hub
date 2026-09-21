@@ -448,6 +448,12 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
         "Welcome to your BLP Student Hub dashboard.";
     }
 
+    // Users management is ADMIN ONLY.
+    if ($("usersPanel")) {
+      $("usersPanel").style.display =
+        currentProfile?.role === "admin" ? "" : "none";
+    }
+
     if ($("roleBadge")) {
       const role = currentProfile?.role;
 
@@ -464,7 +470,9 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
 
     // Student
     if (currentProfile?.role === "student") {
+      
       hide($("usersPanel"));
+hide($("usersPanel"));
       hide($("teacherDashboard"));
       hide($("teacherControls"));
       hide($("adminDashboard"));
@@ -473,7 +481,9 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
 
     // Teacher
     if (currentProfile?.role === "teacher") {
+      
       hide($("usersPanel"));
+hide($("usersPanel"));
       show($("teacherDashboard"));
       show($("teacherControls"));
       hide($("adminDashboard"));
@@ -482,7 +492,9 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
 
     // Admin
     if (currentProfile?.role === "admin") {
+      
       show($("usersPanel"));
+show($("usersPanel"));
       show($("teacherDashboard"));
       show($("teacherControls"));
       show($("adminDashboard"));
