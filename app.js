@@ -634,6 +634,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
 
   function setupLogout() {
     $("logout")?.addEventListener("click", async () => {
+      resetRoleProtectedUI();
       await stopPresence();
       await supabaseClient.auth.signOut();
 
@@ -1210,6 +1211,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
     supabaseClient.auth.onAuthStateChange(
       async (event, session) => {
         if (event === "SIGNED_OUT") {
+          resetRoleProtectedUI();
           await stopPresence();
           currentUser = null;
           currentProfile = null;
@@ -1227,7 +1229,35 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
   // START
   // ============================================================
 
-  async function startApp() {
+  
+  // ============================================================
+  // ROLE-PROTECTED UI RESET
+  // ============================================================
+
+  function resetRoleProtectedUI() {
+    // Always hide privileged UI before a new account/profile is loaded.
+    const protectedIds = [
+      "userList",
+      "teacherDashboard",
+      "teacherControls",
+      "adminDashboard",
+      "adminControls"
+    ];
+
+    protectedIds.forEach((id) => {
+      const el = $(id);
+      if (el) el.style.display = "none";
+    });
+
+    // Clear privileged content left over from the previous account.
+    if ($("userList")) $("userList").innerHTML = "";
+
+    // Reset role-dependent identity text until the new profile is verified.
+    if ($("roleBadge")) $("roleBadge").textContent = "";
+  }
+
+async function startApp() {
+    resetRoleProtectedUI();
     console.log("BLP Student Hub starting...");
 
     setupAuthButtons();

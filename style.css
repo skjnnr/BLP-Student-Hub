@@ -441,3 +441,13 @@ h1, h2, h3, p { margin-top: 0; }
   color: #e5e7eb;
   font-size: 13px;
 }
+
+
+/* Role-switch safety: JavaScript explicitly reveals these only after role verification. */
+#teacherDashboard[style*="display: none"],
+#teacherControls[style*="display: none"],
+#adminDashboard[style*="display: none"],
+#adminControls[style*="display: none"],
+#userList[style*="display: none"] {
+  display: none !important;
+}
