@@ -1,0 +1,16 @@
+BLP STUDENT HUB - SECURITY CHECKLIST
+
+1. Run security-upgrade.sql in Supabase SQL Editor.
+2. Supabase Authentication:
+   - Enable email confirmation if this is a real deployment.
+   - Set a strong minimum password policy.
+   - Enable CAPTCHA/bot protection for sign-up if available on your plan.
+   - Review Auth rate limits.
+3. Supabase Security Advisor:
+   - Resolve any RLS or exposed-table warnings.
+4. Never put a Supabase secret/service-role key in GitHub or app.js.
+   The sb_publishable_ key is intended for browser use when RLS is correct.
+5. Keep admin/teacher role assignment in Supabase, not in browser controls.
+6. Use HTTPS only (GitHub Pages does this when HTTPS enforcement is enabled).
+7. Keep dependencies current. This site currently loads supabase-js from jsDelivr.
+8. For school/student use, collect the minimum personal information needed.

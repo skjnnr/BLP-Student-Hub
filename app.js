@@ -1,4 +1,22 @@
 (() => {
+
+// Security helpers: never trust user-entered content or URLs.
+function safeExternalUrl(raw) {
+  try {
+    const value = String(raw || "").trim();
+    const candidate = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+    const parsed = new URL(candidate);
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return null;
+    return parsed.href;
+  } catch {
+    return null;
+  }
+}
+
+function setSafeText(element, value) {
+  if (element) element.textContent = String(value ?? "");
+}
+
   "use strict";
 
   // ============================================================
