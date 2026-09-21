@@ -448,12 +448,6 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
         "Welcome to your BLP Student Hub dashboard.";
     }
 
-    // Users management is ADMIN ONLY.
-    if ($("usersPanel")) {
-      $("usersPanel").style.display =
-        currentProfile?.role === "admin" ? "" : "none";
-    }
-
     if ($("roleBadge")) {
       const role = currentProfile?.role;
 
@@ -470,10 +464,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
 
     // Student
     if (currentProfile?.role === "student") {
-      
-      hide($("usersPanel"));
-hide($("usersPanel"));
-      hide($("teacherDashboard"));
+hide($("teacherDashboard"));
       hide($("teacherControls"));
       hide($("adminDashboard"));
       hide($("adminControls"));
@@ -481,10 +472,7 @@ hide($("usersPanel"));
 
     // Teacher
     if (currentProfile?.role === "teacher") {
-      
-      hide($("usersPanel"));
-hide($("usersPanel"));
-      show($("teacherDashboard"));
+show($("teacherDashboard"));
       show($("teacherControls"));
       hide($("adminDashboard"));
       hide($("adminControls"));
@@ -492,15 +480,13 @@ hide($("usersPanel"));
 
     // Admin
     if (currentProfile?.role === "admin") {
-      
-      show($("usersPanel"));
-show($("usersPanel"));
-      show($("teacherDashboard"));
+show($("teacherDashboard"));
       show($("teacherControls"));
       show($("adminDashboard"));
       show($("adminControls"));
     }
 
+    applyRoleUI();
     await startPresence();
     await loadAnnouncements();
     await loadLinks();
@@ -1248,6 +1234,28 @@ show($("usersPanel"));
   // ============================================================
   // ROLE-PROTECTED UI RESET
   // ============================================================
+
+
+  function applyRoleUI() {
+    const role = currentProfile?.role;
+
+    hide($("usersPanel"));
+    hide($("teacherDashboard"));
+    hide($("teacherControls"));
+    hide($("adminDashboard"));
+    hide($("adminControls"));
+
+    if (role === "admin") {
+      show($("usersPanel"));
+      show($("teacherDashboard"));
+      show($("teacherControls"));
+      show($("adminDashboard"));
+      show($("adminControls"));
+    } else if (role === "teacher") {
+      show($("teacherDashboard"));
+      show($("teacherControls"));
+    }
+  }
 
   function resetRoleProtectedUI() {
     // Always hide privileged UI before a new account/profile is loaded.

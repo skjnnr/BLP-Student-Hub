@@ -1,0 +1,19 @@
+Correct role behavior with Realtime Presence
+
+Admin:
+- Users panel visible
+- Teacher controls visible
+- Admin controls visible
+
+Teacher:
+- Users panel hidden
+- Teacher controls visible
+- Admin controls hidden
+
+Student:
+- Users panel hidden
+- Teacher controls hidden
+- Admin controls hidden
+
+Realtime Presence remains enabled only for the Online Members panel.
+Logout/account switching hides all protected UI before the next role is loaded.
