@@ -643,3 +643,16 @@ h1, h2, h3, p { margin-top: 0; }
     grid-column: 1 / -1;
   }
 }
+
+
+.classroom-brand {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+.classroom-brand svg {
+  width: 46px;
+  height: 46px;
+  display: block;
+}
