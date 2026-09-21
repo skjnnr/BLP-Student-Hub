@@ -464,6 +464,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
 
     // Student
     if (currentProfile?.role === "student") {
+      hide($("usersPanel"));
       hide($("teacherDashboard"));
       hide($("teacherControls"));
       hide($("adminDashboard"));
@@ -472,6 +473,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
 
     // Teacher
     if (currentProfile?.role === "teacher") {
+      hide($("usersPanel"));
       show($("teacherDashboard"));
       show($("teacherControls"));
       hide($("adminDashboard"));
@@ -480,6 +482,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
 
     // Admin
     if (currentProfile?.role === "admin") {
+      show($("usersPanel"));
       show($("teacherDashboard"));
       show($("teacherControls"));
       show($("adminDashboard"));
@@ -1237,6 +1240,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
   function resetRoleProtectedUI() {
     // Always hide privileged UI before a new account/profile is loaded.
     const protectedIds = [
+      "usersPanel",
       "userList",
       "teacherDashboard",
       "teacherControls",
