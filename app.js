@@ -57,6 +57,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
   let currentUser = null;
   let currentProfile = null;
   let presenceChannel = null;
+  let showAllUsers = false;
 
   let authMode = "login";
   let loginRole = "student";
@@ -611,6 +612,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
 
   function setupLogout() {
     $("logout")?.addEventListener("click", async () => {
+      showAllUsers = false;
       if ($("usersPanel")) $("usersPanel").style.display = "none";
       if ($("userList")) $("userList").innerHTML = "";
       await stopPresence();
@@ -917,7 +919,14 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
       return;
     }
 
-    data.forEach((profile) => {
+    const allUsers = data;
+
+
+    const visibleUsers = showAllUsers ? allUsers : allUsers.slice(0, 3);
+
+
+
+    visibleUsers.forEach((profile) => {
       const item =
         document.createElement("div");
 
@@ -1032,7 +1041,25 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
 
       list.appendChild(item);
     });
-  }
+  
+    // Keep the Users panel compact: show 3 users until View All is pressed.
+    $("usersViewToggle")?.remove();
+
+    if (allUsers.length > 3) {
+      const toggle = document.createElement("button");
+      toggle.id = "usersViewToggle";
+      toggle.type = "button";
+      toggle.className = "users-view-toggle";
+      toggle.textContent = showAllUsers ? "View Less" : "View All";
+
+      toggle.addEventListener("click", async () => {
+        showAllUsers = !showAllUsers;
+        await loadUsers();
+      });
+
+      $("userList")?.after(toggle);
+    }
+}
 
   // ============================================================
   // DEACTIVATE STUDENT

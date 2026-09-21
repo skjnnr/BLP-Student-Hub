@@ -421,3 +421,22 @@ h1, h2, h3, p { margin-top: 0; }
   min-width: 0; overflow: hidden; text-overflow: ellipsis;
   white-space: nowrap; color: #e5e7eb; font-size: 13px;
 }
+
+
+/* Admin Users panel: View All / View Less */
+.users-view-toggle {
+  width: 100%;
+  margin-top: 10px;
+  padding: 11px 14px;
+  border: 1px solid #333;
+  border-radius: 10px;
+  background: #111;
+  color: #f5f5f5;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.users-view-toggle:hover {
+  background: #1b1b1b;
+}
