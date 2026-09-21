@@ -120,6 +120,27 @@
               <span class="button-arrow">⌄</span>
             </a>
           </div>
+          <div class="school-link-card">
+            <div class="school-link-brand calendar-brand" aria-hidden="true">
+              <svg viewBox="0 0 48 48">
+                <rect x="6" y="9" width="36" height="33" rx="5" fill="#ffffff"/>
+                <path d="M6 16a7 7 0 0 1 7-7h22a7 7 0 0 1 7 7v4H6z" fill="#4285F4"/>
+                <rect x="14" y="5" width="4" height="9" rx="2" fill="#8AB4F8"/>
+                <rect x="30" y="5" width="4" height="9" rx="2" fill="#8AB4F8"/>
+                <text x="24" y="35" text-anchor="middle" font-size="14" font-weight="700" fill="#202124">26</text>
+              </svg>
+            </div>
+            <div class="school-link-copy">
+              <strong>Calendar</strong>
+              <span>View the complete 2026–2027 calendar.</span>
+            </div>
+            <button class="school-link-label calendar-text-button" id="openCalendarText" type="button">Calendar</button>
+            <button class="school-link-button" id="openCalendar" type="button">
+              <span class="button-icon">▣</span>
+              <span>Open Calendar</span>
+              <span class="button-arrow">⌄</span>
+            </button>
+          </div>
         </section>
 
         <div class="content-grid">
@@ -232,5 +253,31 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js"></script>
+
+  <div class="calendar-modal" id="calendarModal" aria-hidden="true">
+    <div class="calendar-window" role="dialog" aria-modal="true" aria-labelledby="calendarTitle">
+      <div class="calendar-window-header">
+        <div>
+          <h2 id="calendarTitle">2026–2027 Calendar</h2>
+          <p>Browse every day from January 2026 through December 2027.</p>
+        </div>
+        <button class="calendar-close" id="closeCalendar" type="button" aria-label="Close calendar">×</button>
+      </div>
+      <div class="calendar-toolbar">
+        <button id="calendarPrev" type="button" aria-label="Previous month">‹</button>
+        <strong id="calendarMonthLabel"></strong>
+        <button id="calendarNext" type="button" aria-label="Next month">›</button>
+      </div>
+      <div class="calendar-weekdays">
+        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+      </div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+      <div class="calendar-year-jump">
+        <button type="button" data-calendar-year="2026">2026</button>
+        <button type="button" data-calendar-year="2027">2027</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>

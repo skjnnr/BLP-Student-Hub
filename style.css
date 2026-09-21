@@ -656,3 +656,61 @@ h1, h2, h3, p { margin-top: 0; }
   height: 46px;
   display: block;
 }
+
+
+.calendar-brand { background: transparent; border: 0; padding: 0; }
+.calendar-brand svg { width: 46px; height: 46px; display: block; }
+.calendar-text-button {
+  border: 0; background: transparent; cursor: pointer; font: inherit;
+}
+.calendar-modal {
+  position: fixed; inset: 0; z-index: 9999; display: none;
+  align-items: center; justify-content: center; padding: 22px;
+  background: rgba(0,0,0,.72); backdrop-filter: blur(5px);
+}
+.calendar-modal.open { display: flex; }
+.calendar-window {
+  width: min(760px, 96vw); max-height: 92vh; overflow: auto;
+  border: 1px solid #30343b; border-radius: 18px;
+  background: #0d0f12; box-shadow: 0 24px 80px rgba(0,0,0,.55);
+  padding: 22px; color: #f5f5f5;
+}
+.calendar-window-header {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 18px;
+}
+.calendar-window-header h2 { margin: 0 0 5px; }
+.calendar-window-header p { margin: 0; color: #9298a2; font-size: 13px; }
+.calendar-close {
+  width: 38px; height: 38px; border: 1px solid #333842; border-radius: 10px;
+  background: #171a1f; color: #fff; font-size: 26px; cursor: pointer;
+}
+.calendar-toolbar {
+  display: grid; grid-template-columns: 42px 1fr 42px; align-items: center;
+  gap: 12px; margin: 22px 0 14px; text-align: center;
+}
+.calendar-toolbar button, .calendar-year-jump button {
+  border: 1px solid #343944; border-radius: 9px; background: #15181d;
+  color: #fff; padding: 10px; cursor: pointer;
+}
+.calendar-toolbar button:hover, .calendar-year-jump button:hover { background: #20242b; }
+.calendar-weekdays, .calendar-grid {
+  display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 7px;
+}
+.calendar-weekdays span {
+  padding: 7px 2px; text-align: center; color: #8f96a1;
+  font-size: 12px; font-weight: 700;
+}
+.calendar-day {
+  min-height: 68px; border: 1px solid #292e36; border-radius: 9px;
+  background: #12151a; padding: 8px; color: #e9eaec; font-weight: 600;
+}
+.calendar-day.empty { visibility: hidden; }
+.calendar-day.today { outline: 2px solid #1686f8; }
+.calendar-day.weekend { background: #101217; color: #b7bcc5; }
+.calendar-year-jump {
+  display: flex; justify-content: center; gap: 10px; margin-top: 16px;
+}
+@media (max-width: 560px) {
+  .calendar-window { padding: 14px; }
+  .calendar-day { min-height: 46px; padding: 6px; font-size: 12px; }
+}

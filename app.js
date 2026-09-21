@@ -1416,4 +1416,80 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
     startApp();
   }
 
+
+
+// 2026–2027 pop-up calendar
+const calendarModal = document.getElementById("calendarModal");
+const calendarGrid = document.getElementById("calendarGrid");
+const calendarMonthLabel = document.getElementById("calendarMonthLabel");
+const calendarPrev = document.getElementById("calendarPrev");
+const calendarNext = document.getElementById("calendarNext");
+const closeCalendar = document.getElementById("closeCalendar");
+const openCalendar = document.getElementById("openCalendar");
+const openCalendarText = document.getElementById("openCalendarText");
+
+let calendarDate = new Date(2026, 0, 1);
+const CALENDAR_MIN = new Date(2026, 0, 1);
+const CALENDAR_MAX = new Date(2027, 11, 1);
+
+function renderCalendar() {
+  if (!calendarGrid || !calendarMonthLabel) return;
+  const year = calendarDate.getFullYear();
+  const month = calendarDate.getMonth();
+  calendarMonthLabel.textContent = calendarDate.toLocaleString("en-US", { month: "long", year: "numeric" });
+  calendarGrid.innerHTML = "";
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const days = new Date(year, month + 1, 0).getDate();
+  for (let i = 0; i < firstDay; i++) {
+    const blank = document.createElement("div");
+    blank.className = "calendar-day empty";
+    calendarGrid.appendChild(blank);
+  }
+
+  const today = new Date();
+  for (let day = 1; day <= days; day++) {
+    const cellDate = new Date(year, month, day);
+    const cell = document.createElement("div");
+    cell.className = "calendar-day";
+    if (cellDate.getDay() === 0 || cellDate.getDay() === 6) cell.classList.add("weekend");
+    if (today.getFullYear() === year && today.getMonth() === month && today.getDate() === day) cell.classList.add("today");
+    cell.textContent = day;
+    calendarGrid.appendChild(cell);
+  }
+  if (calendarPrev) calendarPrev.disabled = calendarDate <= CALENDAR_MIN;
+  if (calendarNext) calendarNext.disabled = calendarDate >= CALENDAR_MAX;
+}
+
+function showCalendar() {
+  calendarModal?.classList.add("open");
+  calendarModal?.setAttribute("aria-hidden", "false");
+  renderCalendar();
+}
+function hideCalendar() {
+  calendarModal?.classList.remove("open");
+  calendarModal?.setAttribute("aria-hidden", "true");
+}
+
+openCalendar?.addEventListener("click", showCalendar);
+openCalendarText?.addEventListener("click", showCalendar);
+closeCalendar?.addEventListener("click", hideCalendar);
+calendarModal?.addEventListener("click", (e) => { if (e.target === calendarModal) hideCalendar(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && calendarModal?.classList.contains("open")) hideCalendar(); });
+
+calendarPrev?.addEventListener("click", () => {
+  const d = new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1);
+  if (d >= CALENDAR_MIN) { calendarDate = d; renderCalendar(); }
+});
+calendarNext?.addEventListener("click", () => {
+  const d = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1);
+  if (d <= CALENDAR_MAX) { calendarDate = d; renderCalendar(); }
+});
+document.querySelectorAll("[data-calendar-year]").forEach((button) => {
+  button.addEventListener("click", () => {
+    calendarDate = new Date(Number(button.dataset.calendarYear), 0, 1);
+    renderCalendar();
+  });
+});
+
 })();
