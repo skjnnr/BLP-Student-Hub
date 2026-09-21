@@ -148,6 +148,8 @@
               <h3>Post Announcement</h3>
               <input id="announcementTitle" type="text" placeholder="Announcement title">
               <textarea id="announcementText" rows="4" placeholder="Write your announcement"></textarea>
+              <label class="duration-label" for="announcementHours">Visible for (hours)</label>
+              <input id="announcementHours" type="number" min="1" max="500" step="1" value="24" placeholder="1-500">
               <button id="postAnnouncement" class="primary" type="button">Post Announcement</button>
             </div>
 
@@ -155,6 +157,8 @@
               <h3>Add School Link</h3>
               <input id="linkTitle" type="text" placeholder="Link name">
               <input id="linkUrl" type="url" placeholder="https://example.com">
+              <label class="duration-label" for="linkHours">Visible for (hours)</label>
+              <input id="linkHours" type="number" min="1" max="500" step="1" value="24" placeholder="1-500">
               <button id="postLink" class="primary" type="button">Add Link</button>
             </div>
           </div>

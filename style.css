@@ -440,3 +440,36 @@ h1, h2, h3, p { margin-top: 0; }
 .users-view-toggle:hover {
   background: #1b1b1b;
 }
+
+
+/* Timed announcements/links + staff edit/delete */
+.duration-label {
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: #a3a3a3;
+}
+
+.content-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.small-action {
+  width: auto;
+  padding: 7px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.danger {
+  background: #2a0d0d;
+  color: #ffb4b4;
+  border: 1px solid #6b2424;
+}
+
+.danger:hover {
+  background: #3a1111;
+}

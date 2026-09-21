@@ -658,13 +658,19 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
 
     if (!list) return;
 
+    const now = Date.now();
+    const visibleAnnouncements = (data || []).filter((announcement) => {
+      if (!announcement.expires_at) return true;
+      return new Date(announcement.expires_at).getTime() > now;
+    });
+
     list.innerHTML = "";
 
-    if (!data || data.length === 0) {
+    if (visibleAnnouncements.length === 0) {
       list.innerHTML =
         "<p>No announcements yet.</p>";
     } else {
-      data.forEach((announcement) => {
+      visibleAnnouncements.forEach((announcement) => {
         const item = document.createElement("div");
 
         item.className = "announcement";
@@ -678,18 +684,75 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
           )}</p>
         `;
 
+        if (["teacher", "admin"].includes(currentProfile?.role)) {
+          const actions = document.createElement("div");
+          actions.className = "content-actions";
+
+          const editButton = document.createElement("button");
+          editButton.type = "button";
+          editButton.className = "secondary small-action";
+          editButton.textContent = "Edit";
+          editButton.addEventListener("click", async () => {
+            const newTitle = prompt("Announcement title:", announcement.title);
+            if (newTitle === null) return;
+            const oldContent = announcement.content || announcement.text || "";
+            const newContent = prompt("Announcement message:", oldContent);
+            if (newContent === null) return;
+
+            if (!newTitle.trim() || !newContent.trim()) {
+              alert("Title and message cannot be empty.");
+              return;
+            }
+
+            const { error } = await supabaseClient
+              .from("announcements")
+              .update({
+                title: newTitle.trim(),
+                content: newContent.trim()
+              })
+              .eq("id", announcement.id);
+
+            if (error) {
+              alert(error.message);
+              return;
+            }
+            await loadAnnouncements();
+          });
+
+          const deleteButton = document.createElement("button");
+          deleteButton.type = "button";
+          deleteButton.className = "danger small-action";
+          deleteButton.textContent = "Delete";
+          deleteButton.addEventListener("click", async () => {
+            if (!confirm("Delete this announcement?")) return;
+            const { error } = await supabaseClient
+              .from("announcements")
+              .delete()
+              .eq("id", announcement.id);
+
+            if (error) {
+              alert(error.message);
+              return;
+            }
+            await loadAnnouncements();
+          });
+
+          actions.append(editButton, deleteButton);
+          item.appendChild(actions);
+        }
+
         list.appendChild(item);
       });
     }
 
     if ($("announcementCount")) {
       $("announcementCount").textContent =
-        data?.length || 0;
+        visibleAnnouncements.length;
     }
 
     if ($("teacherAnnouncementCount")) {
       $("teacherAnnouncementCount").textContent =
-        data?.length || 0;
+        visibleAnnouncements.length;
     }
   }
 
@@ -716,6 +779,8 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
         const content =
           $("announcementText")?.value.trim();
 
+        const hours = Number($("announcementHours")?.value);
+
         if (!title || !content) {
           alert(
             "Please enter a title and message."
@@ -723,13 +788,22 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
           return;
         }
 
+        if (!Number.isInteger(hours) || hours < 1 || hours > 500) {
+          alert("Visible hours must be a whole number from 1 to 500.");
+          return;
+        }
+
+        const expiresAt =
+          new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
+
         const { error } =
           await supabaseClient
             .from("announcements")
             .insert({
               title: title,
               content: content,
-              created_by: currentUser.id
+              created_by: currentUser.id,
+              expires_at: expiresAt
             });
 
         if (error) {
@@ -740,6 +814,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
 
         $("announcementTitle").value = "";
         $("announcementText").value = "";
+        $("announcementHours").value = "24";
 
         await loadAnnouncements();
       }
@@ -768,13 +843,19 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
 
     if (!list) return;
 
+    const now = Date.now();
+    const visibleLinks = (data || []).filter((link) => {
+      if (!link.expires_at) return true;
+      return new Date(link.expires_at).getTime() > now;
+    });
+
     list.innerHTML = "";
 
-    if (!data || data.length === 0) {
+    if (visibleLinks.length === 0) {
       list.innerHTML =
         "<p>No links posted yet.</p>";
     } else {
-      data.forEach((link) => {
+      visibleLinks.forEach((link) => {
         const item = document.createElement("div");
 
         item.className = "link-item";
@@ -798,18 +879,76 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
           </a>
         `;
 
+        if (["teacher", "admin"].includes(currentProfile?.role)) {
+          const actions = document.createElement("div");
+          actions.className = "content-actions";
+
+          const editButton = document.createElement("button");
+          editButton.type = "button";
+          editButton.className = "secondary small-action";
+          editButton.textContent = "Edit";
+          editButton.addEventListener("click", async () => {
+            const newTitle = prompt("Link name:", link.title);
+            if (newTitle === null) return;
+            let newUrl = prompt("Link URL:", link.url || "");
+            if (newUrl === null) return;
+
+            if (!newTitle.trim() || !newUrl.trim()) {
+              alert("Link name and URL cannot be empty.");
+              return;
+            }
+
+            newUrl = newUrl.trim();
+            if (!newUrl.startsWith("http://") && !newUrl.startsWith("https://")) {
+              newUrl = "https://" + newUrl;
+            }
+
+            const { error } = await supabaseClient
+              .from("links")
+              .update({ title: newTitle.trim(), url: newUrl })
+              .eq("id", link.id);
+
+            if (error) {
+              alert(error.message);
+              return;
+            }
+            await loadLinks();
+          });
+
+          const deleteButton = document.createElement("button");
+          deleteButton.type = "button";
+          deleteButton.className = "danger small-action";
+          deleteButton.textContent = "Delete";
+          deleteButton.addEventListener("click", async () => {
+            if (!confirm("Delete this link?")) return;
+            const { error } = await supabaseClient
+              .from("links")
+              .delete()
+              .eq("id", link.id);
+
+            if (error) {
+              alert(error.message);
+              return;
+            }
+            await loadLinks();
+          });
+
+          actions.append(editButton, deleteButton);
+          item.appendChild(actions);
+        }
+
         list.appendChild(item);
       });
     }
 
     if ($("linkCount")) {
       $("linkCount").textContent =
-        data?.length || 0;
+        visibleLinks.length;
     }
 
     if ($("teacherLinkCount")) {
       $("teacherLinkCount").textContent =
-        data?.length || 0;
+        visibleLinks.length;
     }
   }
 
@@ -836,12 +975,22 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
         const url =
           $("linkUrl")?.value.trim();
 
+        const hours = Number($("linkHours")?.value);
+
         if (!title || !url) {
           alert(
             "Please enter a link name and URL."
           );
           return;
         }
+
+        if (!Number.isInteger(hours) || hours < 1 || hours > 500) {
+          alert("Visible hours must be a whole number from 1 to 500.");
+          return;
+        }
+
+        const expiresAt =
+          new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
 
         let finalUrl = url;
 
@@ -858,7 +1007,8 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
             .insert({
               title: title,
               url: finalUrl,
-              created_by: currentUser.id
+              created_by: currentUser.id,
+              expires_at: expiresAt
             });
 
         if (error) {
@@ -869,6 +1019,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
 
         $("linkTitle").value = "";
         $("linkUrl").value = "";
+        $("linkHours").value = "24";
 
         await loadLinks();
       }
