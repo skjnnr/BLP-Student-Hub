@@ -56,6 +56,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
 
   let currentUser = null;
   let currentProfile = null;
+  let presenceChannel = null;
 
   let authMode = "login";
   let loginRole = "student";
@@ -485,6 +486,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
       show($("adminControls"));
     }
 
+    await startPresence();
     await loadAnnouncements();
     await loadLinks();
 
@@ -496,12 +498,143 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
     }
   }
 
+
+  // ============================================================
+  // REALTIME ONLINE MEMBERS
+  // ============================================================
+
+  function renderOnlineMembers(state = {}) {
+    const membersById = new Map();
+
+    Object.values(state).forEach((presences) => {
+      (presences || []).forEach((presence) => {
+        if (!presence?.user_id) return;
+        membersById.set(presence.user_id, presence);
+      });
+    });
+
+    const members = [...membersById.values()].filter(
+      (member) =>
+        member.email &&
+        ["admin", "teacher", "student"].includes(member.role)
+    );
+
+    if ($("userCount")) {
+      $("userCount").textContent = members.length;
+    }
+
+    const groups = {
+      admin: $("onlineAdmins"),
+      teacher: $("onlineTeachers"),
+      student: $("onlineStudents")
+    };
+
+    const emptyText = {
+      admin: "No admins online",
+      teacher: "No teachers online",
+      student: "No students online"
+    };
+
+    Object.entries(groups).forEach(([role, container]) => {
+      if (!container) return;
+
+      container.innerHTML = "";
+
+      const roleMembers = members
+        .filter((member) => member.role === role)
+        .sort((a, b) => a.email.localeCompare(b.email));
+
+      if (roleMembers.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "member-placeholder";
+        empty.textContent = emptyText[role];
+        container.appendChild(empty);
+        return;
+      }
+
+      roleMembers.forEach((member) => {
+        const row = document.createElement("div");
+        row.className = "online-member";
+
+        const dot = document.createElement("span");
+        dot.className = "online-member-dot";
+
+        const email = document.createElement("span");
+        email.className = "online-member-email";
+        email.textContent = member.email;
+
+        row.append(dot, email);
+        container.appendChild(row);
+      });
+    });
+  }
+
+  async function stopPresence() {
+    if (!presenceChannel) {
+      renderOnlineMembers({});
+      return;
+    }
+
+    try {
+      await presenceChannel.untrack();
+    } catch (error) {
+      console.warn("Presence untrack warning:", error);
+    }
+
+    try {
+      await supabaseClient.removeChannel(presenceChannel);
+    } catch (error) {
+      console.warn("Presence channel cleanup warning:", error);
+    }
+
+    presenceChannel = null;
+    renderOnlineMembers({});
+  }
+
+  async function startPresence() {
+    if (!currentUser || !currentProfile) return;
+
+    await stopPresence();
+
+    presenceChannel = supabaseClient.channel("blp-online-members", {
+      config: {
+        presence: {
+          key: currentUser.id
+        }
+      }
+    });
+
+    presenceChannel.on("presence", { event: "sync" }, () => {
+      if (!presenceChannel) return;
+      renderOnlineMembers(presenceChannel.presenceState());
+    });
+
+    presenceChannel.subscribe(async (status) => {
+      if (status !== "SUBSCRIBED" || !presenceChannel) return;
+
+      const result = await presenceChannel.track({
+        user_id: currentUser.id,
+        email:
+          currentUser.email ||
+          currentProfile.email ||
+          "Unknown user",
+        role: currentProfile.role,
+        online_at: new Date().toISOString()
+      });
+
+      if (result !== "ok") {
+        console.error("Could not track online presence:", result);
+      }
+    });
+  }
+
   // ============================================================
   // LOGOUT
   // ============================================================
 
   function setupLogout() {
     $("logout")?.addEventListener("click", async () => {
+      await stopPresence();
       await supabaseClient.auth.signOut();
 
       currentUser = null;
@@ -1077,6 +1210,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
     supabaseClient.auth.onAuthStateChange(
       async (event, session) => {
         if (event === "SIGNED_OUT") {
+          await stopPresence();
           currentUser = null;
           currentProfile = null;
 

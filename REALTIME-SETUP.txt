@@ -1,0 +1,17 @@
+BLP Student Hub - Realtime Presence
+
+The Online Members panel is now connected to Supabase Realtime Presence.
+
+What it does:
+- Shows signed-in users only.
+- Displays their email address.
+- Places them under ADMINS, TEACHERS, or STUDENTS.
+- Updates when users join or leave.
+- Removes a user on logout/disconnect.
+
+Supabase:
+Presence uses Supabase Realtime channels, so no additional database table is
+required by this project. Keep your existing profiles table and roles SQL.
+
+If the panel cannot connect, check that Realtime is available/enabled for the
+Supabase project and inspect the browser console for a Realtime/WebSocket error.
