@@ -537,3 +537,109 @@ h1, h2, h3, p { margin-top: 0; }
     flex-direction: column;
   }
 }
+
+
+/* Matching Clever + Home Access quick-link cards */
+.school-links {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0 18px;
+}
+
+.school-link-card {
+  display: grid;
+  grid-template-columns: 48px minmax(190px, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid #2b2f36;
+  border-radius: 12px;
+  background: linear-gradient(110deg, #101216, #0b0d10);
+}
+
+.school-link-brand {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 27px;
+}
+
+.clever-brand {
+  background: #3b63ff;
+  color: #fff;
+}
+
+.hac-brand {
+  background: #07161c;
+  color: #00bce8;
+  border: 1px solid #0b6d84;
+  font-size: 24px;
+}
+
+.school-link-copy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.school-link-copy strong {
+  color: #f5f5f5;
+  font-size: 14px;
+}
+
+.school-link-copy span {
+  color: #9298a2;
+  font-size: 12px;
+}
+
+.school-link-label {
+  color: #e5e7eb;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.school-link-label:hover {
+  text-decoration: underline;
+}
+
+.school-link-button {
+  min-width: 165px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 11px 14px;
+  border-radius: 8px;
+  background: #087cf0;
+  color: #fff;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.school-link-button:hover {
+  filter: brightness(1.08);
+}
+
+.button-arrow {
+  margin-left: auto;
+}
+
+@media (max-width: 760px) {
+  .school-link-card {
+    grid-template-columns: 48px 1fr;
+  }
+
+  .school-link-label {
+    grid-column: 2;
+  }
+
+  .school-link-button {
+    grid-column: 1 / -1;
+  }
+}
