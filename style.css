@@ -473,3 +473,67 @@ h1, h2, h3, p { margin-top: 0; }
 .danger:hover {
   background: #3a1111;
 }
+
+
+/* Clever quick-access card */
+.clever-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 16px 0 18px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+}
+
+.clever-info h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.clever-info p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.clever-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.clever-text-link {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.clever-text-link:hover {
+  text-decoration: underline;
+}
+
+.clever-login-button {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 8px;
+  overflow: hidden;
+  text-decoration: none;
+}
+
+.clever-login-button img {
+  display: block;
+  height: 42px;
+  width: auto;
+  max-width: 220px;
+}
+
+@media (max-width: 650px) {
+  .clever-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
