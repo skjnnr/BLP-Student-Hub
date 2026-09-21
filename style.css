@@ -714,3 +714,7 @@ h1, h2, h3, p { margin-top: 0; }
   .calendar-window { padding: 14px; }
   .calendar-day { min-height: 46px; padding: 6px; font-size: 12px; }
 }
+
+.calendar-day.no-school{background:#b91c1c!important;border-color:#ef4444!important;color:#fff!important}
+.calendar-day.admin-editable{cursor:pointer}
+.calendar-day.admin-editable:hover{border-color:#ef4444;transform:translateY(-1px)}

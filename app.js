@@ -1432,33 +1432,51 @@ let calendarDate = new Date(2026, 0, 1);
 const CALENDAR_MIN = new Date(2026, 0, 1);
 const CALENDAR_MAX = new Date(2027, 11, 1);
 
-function renderCalendar() {
+async function renderCalendar() {
   if (!calendarGrid || !calendarMonthLabel) return;
-  const year = calendarDate.getFullYear();
-  const month = calendarDate.getMonth();
-  calendarMonthLabel.textContent = calendarDate.toLocaleString("en-US", { month: "long", year: "numeric" });
-  calendarGrid.innerHTML = "";
-
-  const firstDay = new Date(year, month, 1).getDay();
-  const days = new Date(year, month + 1, 0).getDate();
-  for (let i = 0; i < firstDay; i++) {
-    const blank = document.createElement("div");
-    blank.className = "calendar-day empty";
-    calendarGrid.appendChild(blank);
-  }
-
-  const today = new Date();
-  for (let day = 1; day <= days; day++) {
-    const cellDate = new Date(year, month, day);
-    const cell = document.createElement("div");
-    cell.className = "calendar-day";
-    if (cellDate.getDay() === 0 || cellDate.getDay() === 6) cell.classList.add("weekend");
-    if (today.getFullYear() === year && today.getMonth() === month && today.getDate() === day) cell.classList.add("today");
-    cell.textContent = day;
+  const year=calendarDate.getFullYear(), month=calendarDate.getMonth();
+  calendarMonthLabel.textContent=calendarDate.toLocaleString("en-US",{month:"long",year:"numeric"});
+  calendarGrid.innerHTML="";
+  let marked=new Set();
+  try {
+    const first=`${year}-${String(month+1).padStart(2,"0")}-01`;
+    const lastDay=new Date(year,month+1,0).getDate();
+    const last=`${year}-${String(month+1).padStart(2,"0")}-${String(lastDay).padStart(2,"0")}`;
+    const {data,error}=await supabaseClient.from("calendar_no_school_days").select("day").gte("day",first).lte("day",last);
+    if(error) throw error;
+    marked=new Set((data||[]).map(x=>x.day));
+  } catch(e){ console.error(e); }
+  const firstDay=new Date(year,month,1).getDay(), days=new Date(year,month+1,0).getDate(), today=new Date();
+  for(let i=0;i<firstDay;i++){const x=document.createElement("div");x.className="calendar-day empty";calendarGrid.appendChild(x);}
+  for(let day=1;day<=days;day++){
+    const d=new Date(year,month,day), key=`${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+    const cell=document.createElement("div"); cell.className="calendar-day"; cell.textContent=day;
+    const isWeekend = d.getDay()===0 || d.getDay()===6;
+    if(isWeekend) cell.classList.add("weekend", "no-school");
+    if(today.getFullYear()===year&&today.getMonth()===month&&today.getDate()===day) cell.classList.add("today");
+    if(marked.has(key)) cell.classList.add("no-school");
+    if(currentProfile?.role==="admin" && !isWeekend){
+      cell.classList.add("admin-editable");
+      cell.addEventListener("click",()=>toggleNoSchoolDay(key,cell));
+    }
     calendarGrid.appendChild(cell);
   }
-  if (calendarPrev) calendarPrev.disabled = calendarDate <= CALENDAR_MIN;
-  if (calendarNext) calendarNext.disabled = calendarDate >= CALENDAR_MAX;
+  if(calendarPrev) calendarPrev.disabled=calendarDate<=CALENDAR_MIN;
+  if(calendarNext) calendarNext.disabled=calendarDate>=CALENDAR_MAX;
+}
+async function toggleNoSchoolDay(key,cell){
+  if(currentProfile?.role!=="admin") return;
+  cell.style.pointerEvents="none";
+  try{
+    if(cell.classList.contains("no-school")){
+      const {error}=await supabaseClient.from("calendar_no_school_days").delete().eq("day",key); if(error) throw error;
+      cell.classList.remove("no-school");
+    }else{
+      const {error}=await supabaseClient.from("calendar_no_school_days").insert({day:key,created_by:currentUser.id}); if(error) throw error;
+      cell.classList.add("no-school");
+    }
+  }catch(e){console.error(e);alert("Could not update this day. Make sure shared-calendar-days.sql was run in Supabase.");}
+  finally{cell.style.pointerEvents="";}
 }
 
 function showCalendar() {
