@@ -721,3 +721,18 @@ h1, h2, h3, p { margin-top: 0; }
 
 /* Users/Admin Controls panel removed for all roles */
 #usersPanel { display: none !important; }
+
+/* Mammoth Spring logo beside the header credits */
+.brand-subtitle-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.district-header-logo {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  display: block;
+  flex: 0 0 38px;
+}
