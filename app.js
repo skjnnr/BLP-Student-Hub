@@ -517,7 +517,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
     await loadLinks();
 
     if (currentProfile?.role === "admin") {
-      await loadUsers();
+      await /* Users panel removed */
     } else if ($("userList")) {
       $("userList").innerHTML = "";
     }
@@ -1223,7 +1223,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
 
       toggle.addEventListener("click", async () => {
         showAllUsers = !showAllUsers;
-        await loadUsers();
+        await /* Users panel removed */
       });
 
       $("userList")?.after(toggle);
@@ -1267,7 +1267,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
       return;
     }
 
-    await loadUsers();
+    await /* Users panel removed */
   }
 
   // ============================================================
@@ -1303,7 +1303,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
       return;
     }
 
-    await loadUsers();
+    await /* Users panel removed */
   }
 
   // ============================================================
@@ -1332,7 +1332,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
       return;
     }
 
-    await loadUsers();
+    await /* Users panel removed */
   }
 
   // ============================================================
