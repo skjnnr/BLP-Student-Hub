@@ -760,3 +760,30 @@ h1, h2, h3, p { margin-top: 0; }
   object-fit: contain;
   display: block;
 }
+
+/* Exact compact header credit layout */
+.brand-subtitle {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.district-credit-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.creator-credit-line {
+  display: block;
+}
+
+.district-header-logo {
+  width: 30px !important;
+  height: 30px !important;
+  object-fit: contain;
+  display: inline-block;
+  flex: 0 0 30px;
+  background: transparent !important;
+}
