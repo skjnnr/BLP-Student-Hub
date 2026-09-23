@@ -787,3 +787,11 @@ h1, h2, h3, p { margin-top: 0; }
   flex: 0 0 30px;
   background: transparent !important;
 }
+
+/* Preserve the bear's internal white details; only the outside PNG background is transparent. */
+.district-header-logo {
+  width: 30px !important;
+  height: 30px !important;
+  object-fit: contain;
+  background: transparent !important;
+}
