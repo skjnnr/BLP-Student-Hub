@@ -736,3 +736,27 @@ h1, h2, h3, p { margin-top: 0; }
   display: block;
   flex: 0 0 38px;
 }
+
+/* Header layout rebuilt as HTML/CSS to match the requested compact design */
+.brand-subtitle-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.district-logo-frame {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex: 0 0 30px;
+}
+
+.district-header-logo {
+  width: 30px !important;
+  height: 30px !important;
+  object-fit: contain;
+  display: block;
+}
