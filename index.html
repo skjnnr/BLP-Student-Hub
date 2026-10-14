@@ -70,6 +70,8 @@
         <div class="account-area">
           <span id="who"></span>
           <span id="roleBadge" class="role-badge">Student</span>
+          <button id="openLunchVote" class="secondary lunch-vote-header-btn" type="button">Vote For Today's Lunch</button>
+          <button id="openLunchAdmin" class="secondary lunch-vote-header-btn" type="button" style="display:none;">Lunch Votes</button>
           <button id="logout" class="secondary" type="button">Logout</button>
         </div>
       </header>
@@ -260,6 +262,60 @@
     </section>
   </div>
 
+
+
+  <!-- LUNCH VOTE WINDOW: all signed-in users -->
+  <div class="lunch-modal" id="lunchVoteModal" aria-hidden="true">
+    <div class="lunch-window" role="dialog" aria-modal="true" aria-labelledby="lunchVoteTitle">
+      <div class="lunch-window-header">
+        <div>
+          <h2 id="lunchVoteTitle">Vote For Today's Lunch</h2>
+          <p>Choose one option. Each account can vote once per day.</p>
+        </div>
+        <button class="lunch-close" id="closeLunchVote" type="button" aria-label="Close">×</button>
+      </div>
+
+      <div class="lunch-counts">
+        <div class="lunch-count hot-count"><span>Hot Lunch</span><strong id="publicHotCount">0</strong></div>
+        <div class="lunch-count cold-count"><span>Cold Lunch</span><strong id="publicColdCount">0</strong></div>
+      </div>
+
+      <div id="lunchVoteChoices" class="lunch-choice-area">
+        <p class="lunch-option-title">Hot Lunch Option</p>
+        <button id="voteHotLunch" class="lunch-choice hot-lunch-btn" type="button">Hot Lunch</button>
+        <p class="lunch-option-title">Cold Lunch Option</p>
+        <button id="voteColdLunch" class="lunch-choice cold-lunch-btn" type="button">Cold Lunch</button>
+      </div>
+
+      <div id="lunchVoteSubmitted" class="lunch-submitted" style="display:none;">
+        <strong>Your Vote has been submitted!</strong>
+        <span id="yourLunchVote"></span>
+      </div>
+      <p id="lunchVoteMessage" class="message"></p>
+    </div>
+  </div>
+
+  <!-- ADMIN LUNCH VOTES WINDOW -->
+  <div class="lunch-modal" id="lunchAdminModal" aria-hidden="true">
+    <div class="lunch-window lunch-admin-window" role="dialog" aria-modal="true" aria-labelledby="lunchAdminTitle">
+      <div class="lunch-window-header">
+        <div>
+          <h2 id="lunchAdminTitle">Lunch Votes</h2>
+          <p>Today's student, teacher, and administrator lunch selections.</p>
+        </div>
+        <div class="admin-lunch-header-right">
+          <div class="lunch-counts admin-counts">
+            <div class="lunch-count hot-count"><span>Hot Lunch</span><strong id="adminHotCount">0</strong></div>
+            <div class="lunch-count cold-count"><span>Cold Lunch</span><strong id="adminColdCount">0</strong></div>
+          </div>
+          <button class="lunch-close" id="closeLunchAdmin" type="button" aria-label="Close">×</button>
+        </div>
+      </div>
+      <div id="lunchVoteFeed" class="lunch-vote-feed">
+        <div class="lunch-empty">No votes yet today.</div>
+      </div>
+    </div>
+  </div>
 
   <div class="calendar-modal" id="calendarModal" aria-hidden="true">
     <div class="calendar-window" role="dialog" aria-modal="true" aria-labelledby="calendarTitle">

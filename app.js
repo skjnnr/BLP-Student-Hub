@@ -474,6 +474,11 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
         "Welcome to your BLP Student Hub dashboard.";
     }
 
+    if ($("openLunchAdmin")) {
+      $("openLunchAdmin").style.display =
+        currentProfile?.role === "admin" ? "" : "none";
+    }
+
     if ($("roleBadge")) {
       const role = currentProfile?.role;
 
@@ -1527,5 +1532,193 @@ document.querySelectorAll("[data-calendar-year]").forEach((button) => {
     renderCalendar();
   });
 });
+
+
+
+  // ============================================================
+  // LUNCH VOTING
+  // One vote per authenticated account per calendar day.
+  // Database/RPC functions enforce permissions server-side.
+  // ============================================================
+  const lunchVoteModal = $("lunchVoteModal");
+  const lunchAdminModal = $("lunchAdminModal");
+  let lunchRefreshTimer = null;
+
+  function setLunchModal(modal, open) {
+    if (!modal) return;
+    modal.classList.toggle("open", open);
+    modal.setAttribute("aria-hidden", open ? "false" : "true");
+  }
+
+  async function loadLunchCounts() {
+    try {
+      const { data, error } = await supabaseClient.rpc("get_today_lunch_counts");
+      if (error) throw error;
+      const row = Array.isArray(data) ? (data[0] || {}) : (data || {});
+      const hot = Number(row.hot_count || 0);
+      const cold = Number(row.cold_count || 0);
+      ["publicHotCount","adminHotCount"].forEach(id => { if ($(id)) $(id).textContent = hot; });
+      ["publicColdCount","adminColdCount"].forEach(id => { if ($(id)) $(id).textContent = cold; });
+    } catch (error) {
+      console.error("Lunch count error:", error);
+    }
+  }
+
+  async function loadMyLunchVote() {
+    if (!currentUser) return null;
+    const { data, error } = await supabaseClient.rpc("get_my_today_lunch_vote");
+    if (error) throw error;
+    const row = Array.isArray(data) ? data[0] : data;
+    return row?.choice || null;
+  }
+
+  function showSubmittedLunchVote(choice) {
+    if ($("lunchVoteChoices")) $("lunchVoteChoices").style.display = "none";
+    if ($("lunchVoteSubmitted")) $("lunchVoteSubmitted").style.display = "";
+    if ($("yourLunchVote")) {
+      $("yourLunchVote").textContent =
+        choice === "hot" ? "You selected Hot Lunch." : "You selected Cold Lunch.";
+    }
+  }
+
+  function showLunchChoices() {
+    if ($("lunchVoteChoices")) $("lunchVoteChoices").style.display = "";
+    if ($("lunchVoteSubmitted")) $("lunchVoteSubmitted").style.display = "none";
+  }
+
+  async function openLunchVoting() {
+    if (!currentUser || !currentProfile) return;
+    setLunchModal(lunchVoteModal, true);
+    if ($("lunchVoteMessage")) $("lunchVoteMessage").textContent = "";
+    await loadLunchCounts();
+    try {
+      const choice = await loadMyLunchVote();
+      if (choice) showSubmittedLunchVote(choice);
+      else showLunchChoices();
+    } catch (error) {
+      console.error(error);
+      if ($("lunchVoteMessage")) $("lunchVoteMessage").textContent =
+        "Lunch voting is not ready yet. Run lunch-votes.sql in Supabase.";
+    }
+  }
+
+  async function submitLunchVote(choice) {
+    if (!currentUser || !currentProfile) return;
+    const hotBtn = $("voteHotLunch"), coldBtn = $("voteColdLunch");
+    if (hotBtn) hotBtn.disabled = true;
+    if (coldBtn) coldBtn.disabled = true;
+    if ($("lunchVoteMessage")) $("lunchVoteMessage").textContent = "";
+
+    try {
+      const { data, error } = await supabaseClient.rpc("submit_lunch_vote", {
+        selected_choice: choice
+      });
+      if (error) throw error;
+      showSubmittedLunchVote(choice);
+      await loadLunchCounts();
+    } catch (error) {
+      console.error("Lunch vote submit error:", error);
+      const message = String(error?.message || "");
+      if (message.toLowerCase().includes("already voted")) {
+        try {
+          const existing = await loadMyLunchVote();
+          if (existing) showSubmittedLunchVote(existing);
+        } catch {}
+      } else if ($("lunchVoteMessage")) {
+        $("lunchVoteMessage").textContent =
+          "Could not submit your vote. Make sure lunch-votes.sql was run in Supabase.";
+      }
+    } finally {
+      if (hotBtn) hotBtn.disabled = false;
+      if (coldBtn) coldBtn.disabled = false;
+    }
+  }
+
+  async function loadAdminLunchVotes() {
+    if (currentProfile?.role !== "admin") return;
+    await loadLunchCounts();
+    const feed = $("lunchVoteFeed");
+    if (!feed) return;
+
+    try {
+      const { data, error } = await supabaseClient.rpc("get_today_lunch_votes_admin");
+      if (error) throw error;
+      feed.innerHTML = "";
+
+      if (!data || data.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "lunch-empty";
+        empty.textContent = "No votes yet today.";
+        feed.appendChild(empty);
+        return;
+      }
+
+      data.forEach(vote => {
+        const row = document.createElement("div");
+        row.className = "lunch-vote-row";
+
+        const email = document.createElement("div");
+        email.className = "lunch-vote-email";
+        email.textContent = vote.email || "Unknown account";
+
+        const role = document.createElement("div");
+        role.className = "lunch-vote-role";
+        role.textContent = vote.role || "user";
+
+        const choice = document.createElement("div");
+        choice.className = `lunch-vote-choice ${vote.choice}`;
+        choice.textContent = vote.choice === "hot" ? "Hot Lunch" : "Cold Lunch";
+
+        row.append(email, role, choice);
+        feed.appendChild(row);
+      });
+    } catch (error) {
+      console.error("Admin lunch vote error:", error);
+      feed.innerHTML = "";
+      const err = document.createElement("div");
+      err.className = "lunch-empty";
+      err.textContent = "Could not load lunch votes. Run lunch-votes.sql in Supabase.";
+      feed.appendChild(err);
+    }
+  }
+
+  async function openAdminLunchVotes() {
+    if (currentProfile?.role !== "admin") return;
+    setLunchModal(lunchAdminModal, true);
+    await loadAdminLunchVotes();
+    clearInterval(lunchRefreshTimer);
+    lunchRefreshTimer = setInterval(() => {
+      if (lunchAdminModal?.classList.contains("open")) loadAdminLunchVotes();
+    }, 10000);
+  }
+
+  $("openLunchVote")?.addEventListener("click", openLunchVoting);
+  $("openLunchAdmin")?.addEventListener("click", openAdminLunchVotes);
+  $("closeLunchVote")?.addEventListener("click", () => setLunchModal(lunchVoteModal, false));
+  $("closeLunchAdmin")?.addEventListener("click", () => {
+    setLunchModal(lunchAdminModal, false);
+    clearInterval(lunchRefreshTimer);
+  });
+  $("voteHotLunch")?.addEventListener("click", () => submitLunchVote("hot"));
+  $("voteColdLunch")?.addEventListener("click", () => submitLunchVote("cold"));
+
+  lunchVoteModal?.addEventListener("click", e => {
+    if (e.target === lunchVoteModal) setLunchModal(lunchVoteModal, false);
+  });
+  lunchAdminModal?.addEventListener("click", e => {
+    if (e.target === lunchAdminModal) {
+      setLunchModal(lunchAdminModal, false);
+      clearInterval(lunchRefreshTimer);
+    }
+  });
+
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") {
+      setLunchModal(lunchVoteModal, false);
+      setLunchModal(lunchAdminModal, false);
+      clearInterval(lunchRefreshTimer);
+    }
+  });
+
 
 })();
