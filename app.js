@@ -1586,11 +1586,70 @@ document.querySelectorAll("[data-calendar-year]").forEach((button) => {
     if ($("lunchVoteSubmitted")) $("lunchVoteSubmitted").style.display = "none";
   }
 
+  async function loadLunchMenuSettings() {
+    try {
+      const { data, error } = await supabaseClient.rpc("get_today_lunch_menu");
+      if (error) throw error;
+      const row = Array.isArray(data) ? (data[0] || {}) : (data || {});
+      const hot = row.hot_lunch || "Not set yet";
+      const cold = row.cold_lunch || "Not set yet";
+      if ($("hotLunchName")) $("hotLunchName").textContent = hot;
+      if ($("coldLunchName")) $("coldLunchName").textContent = cold;
+      if ($("hotLunchInput")) $("hotLunchInput").value = row.hot_lunch || "";
+      if ($("coldLunchInput")) $("coldLunchInput").value = row.cold_lunch || "";
+    } catch (error) {
+      console.error("Lunch menu load error:", error);
+    }
+  }
+
+  async function saveLunchMenuSettings() {
+    if (currentProfile?.role !== "admin") return;
+    const hot = $("hotLunchInput")?.value.trim() || "";
+    const cold = $("coldLunchInput")?.value.trim() || "";
+    if (!hot || !cold) {
+      alert("Enter both the Hot Lunch and Cold Lunch options.");
+      return;
+    }
+    try {
+      const { error } = await supabaseClient.rpc("set_today_lunch_menu", {
+        new_hot_lunch: hot,
+        new_cold_lunch: cold
+      });
+      if (error) throw error;
+      await loadLunchMenuSettings();
+      alert("Today's lunch options were saved.");
+    } catch (error) {
+      console.error(error);
+      alert("Could not save lunch options. Make sure the updated lunch-votes.sql was run.");
+    }
+  }
+
+  async function resetLunchVoting() {
+    if (currentProfile?.role !== "admin") return;
+    if (!confirm("Reset all of today's lunch votes? Everyone will be able to vote again.")) return;
+    try {
+      const { error } = await supabaseClient.rpc("reset_today_lunch_votes");
+      if (error) throw error;
+      showLunchChoices();
+      await loadLunchCounts();
+      await loadAdminLunchVotes();
+      alert("Today's lunch votes have been reset.");
+    } catch (error) {
+      console.error(error);
+      alert("Could not reset lunch votes. Make sure the updated lunch-votes.sql was run.");
+    }
+  }
+
   async function openLunchVoting() {
     if (!currentUser || !currentProfile) return;
     setLunchModal(lunchVoteModal, true);
     if ($("lunchVoteMessage")) $("lunchVoteMessage").textContent = "";
     await loadLunchCounts();
+    await loadLunchMenuSettings();
+    if ($("lunchAdminControls")) {
+      $("lunchAdminControls").style.display =
+        currentProfile?.role === "admin" ? "grid" : "none";
+    }
     try {
       const choice = await loadMyLunchVote();
       if (choice) showSubmittedLunchVote(choice);
@@ -1701,6 +1760,8 @@ document.querySelectorAll("[data-calendar-year]").forEach((button) => {
   });
   $("voteHotLunch")?.addEventListener("click", () => submitLunchVote("hot"));
   $("voteColdLunch")?.addEventListener("click", () => submitLunchVote("cold"));
+  $("saveLunchOptions")?.addEventListener("click", saveLunchMenuSettings);
+  $("resetLunchVotes")?.addEventListener("click", resetLunchVoting);
 
   lunchVoteModal?.addEventListener("click", e => {
     if (e.target === lunchVoteModal) setLunchModal(lunchVoteModal, false);

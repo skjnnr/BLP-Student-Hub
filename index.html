@@ -280,6 +280,11 @@
         <div class="lunch-count cold-count"><span>Cold Lunch</span><strong id="publicColdCount">0</strong></div>
       </div>
 
+      <div class="todays-lunch-menu">
+        <div><span>Hot Lunch:</span><strong id="hotLunchName">Not set yet</strong></div>
+        <div><span>Cold Lunch:</span><strong id="coldLunchName">Not set yet</strong></div>
+      </div>
+
       <div id="lunchVoteChoices" class="lunch-choice-area">
         <p class="lunch-option-title">Hot Lunch Option</p>
         <button id="voteHotLunch" class="lunch-choice hot-lunch-btn" type="button">Hot Lunch</button>
@@ -292,6 +297,17 @@
         <span id="yourLunchVote"></span>
       </div>
       <p id="lunchVoteMessage" class="message"></p>
+
+      <div id="lunchAdminControls" class="lunch-admin-controls" style="display:none;">
+        <h3>Admin Lunch Controls</h3>
+        <label for="hotLunchInput">Hot Lunch</label>
+        <input id="hotLunchInput" type="text" maxlength="120" placeholder="Example: Chicken sandwich">
+        <label for="coldLunchInput">Cold Lunch</label>
+        <input id="coldLunchInput" type="text" maxlength="120" placeholder="Example: Ham & cheese sandwich">
+        <button id="saveLunchOptions" class="secondary" type="button">Save Lunch Options</button>
+        <button id="resetLunchVotes" class="danger lunch-reset-btn" type="button">Reset Lunch Votes</button>
+        <p class="lunch-admin-note">Reset removes today's votes so everyone can vote again.</p>
+      </div>
     </div>
   </div>
 
