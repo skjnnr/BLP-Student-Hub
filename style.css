@@ -970,3 +970,16 @@ h1, h2, h3, p { margin-top: 0; }
 }
 .lunch-reset-btn:hover { background:#672020; }
 .lunch-admin-note { margin:0; color:#9298a2; font-size:12px; }
+
+.welcome-with-today{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,410px);gap:28px;align-items:center}
+.today-panel{border-left:3px solid #343942;padding:4px 0 4px 20px;min-height:112px}
+.today-panel>strong{display:block;margin-bottom:8px;font-size:16px}
+.today-info-content{display:grid;gap:6px;font-size:14px}
+.today-info-line{color:#e5e7eb}.today-muted{color:#8f96a1;font-size:13px}
+.today-info-admin-window{width:min(680px,96vw)}
+.today-info-form{display:grid;gap:10px;margin-top:20px}
+.today-info-form label{display:block;color:#aeb4bd;font-size:12px;font-weight:700;margin-bottom:5px}
+.today-info-form input,.today-info-form select{width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #343944;border-radius:9px;background:#111419;color:#fff}
+.today-info-form [data-today-section]{display:grid;gap:8px}
+.today-info-actions{display:flex;gap:10px}.today-info-actions button{flex:1}
+@media(max-width:850px){.welcome-with-today{grid-template-columns:1fr}.today-panel{border-left:0;border-top:2px solid #343942;padding:16px 0 0}}

@@ -72,14 +72,23 @@
           <span id="roleBadge" class="role-badge">Student</span>
           <button id="openLunchVote" class="secondary lunch-vote-header-btn" type="button">Vote For Today's Lunch</button>
           <button id="openLunchAdmin" class="secondary lunch-vote-header-btn" type="button" style="display:none;">Lunch Votes</button>
+          <button id="openTodayInfoAdmin" class="secondary" type="button" style="display:none;">Today Info</button>
           <button id="logout" class="secondary" type="button">Logout</button>
         </div>
       </header>
 
       <main class="dashboard">
-        <section class="welcome-card">
-          <h1 id="welcome">Welcome!</h1>
-          <p id="welcomeText">Welcome to your BLP Student Hub dashboard.</p>
+        <section class="welcome-card welcome-with-today">
+          <div class="welcome-copy">
+            <h1 id="welcome">Welcome!</h1>
+            <p id="welcomeText">Welcome to your BLP Student Hub dashboard.</p>
+          </div>
+          <aside class="today-panel">
+            <strong id="todayDate">Today</strong>
+            <div id="todayInfoContent" class="today-info-content">
+              <span class="today-muted">No information has been added for today.</span>
+            </div>
+          </aside>
         </section>
 
         <section class="school-links" aria-label="School links">
@@ -263,6 +272,57 @@
   </div>
 
 
+
+
+  <div class="lunch-modal" id="todayInfoAdminModal" aria-hidden="true">
+    <div class="lunch-window today-info-admin-window" role="dialog" aria-modal="true">
+      <div class="lunch-window-header">
+        <div>
+          <h2>Edit Today Info</h2>
+          <p>Select an active account, then choose the information you want to edit.</p>
+        </div>
+        <button class="lunch-close" id="closeTodayInfoAdmin" type="button">×</button>
+      </div>
+      <div class="today-info-form">
+        <label>Active Account</label>
+        <select id="todayInfoAccount"><option value="">Select an active account...</option></select>
+
+        <label>Information</label>
+        <select id="todayInfoSection">
+          <option value="current">Current Class / Period</option>
+          <option value="next">Next Class / Room</option>
+          <option value="assignments">Assignments</option>
+          <option value="activity">Activity / Event</option>
+        </select>
+
+        <div data-today-section="current">
+          <label>Current class / period</label>
+          <input id="todayCurrentClass" maxlength="120" placeholder="5th Period — Algebra II">
+          <label>Ends at</label>
+          <input id="todayEndTime" type="time">
+        </div>
+        <div data-today-section="next" style="display:none;">
+          <label>Next class</label>
+          <input id="todayNextClass" maxlength="120" placeholder="English">
+          <label>Room / location</label>
+          <input id="todayNextRoom" maxlength="80" placeholder="Room 214">
+        </div>
+        <div data-today-section="assignments" style="display:none;">
+          <label>Assignments / reminder</label>
+          <input id="todayAssignments" maxlength="180" placeholder="2 assignments due tomorrow">
+        </div>
+        <div data-today-section="activity" style="display:none;">
+          <label>Activity / event</label>
+          <input id="todayActivity" maxlength="180" placeholder="Basketball — 6:00 PM">
+        </div>
+        <div class="today-info-actions">
+          <button id="saveTodayInfo" class="primary" type="button">Save Info</button>
+          <button id="clearTodayInfo" class="lunch-reset-btn" type="button">Clear Today's Info</button>
+        </div>
+        <p id="todayInfoMessage" class="message"></p>
+      </div>
+    </div>
+  </div>
 
   <!-- LUNCH VOTE WINDOW: all signed-in users -->
   <div class="lunch-modal" id="lunchVoteModal" aria-hidden="true">

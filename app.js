@@ -478,6 +478,8 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_4SZZm0RQZ48mYYPdEUacyQ_hLZu5FNt
       $("openLunchAdmin").style.display =
         currentProfile?.role === "admin" ? "" : "none";
     }
+    if ($("openTodayInfoAdmin")) $("openTodayInfoAdmin").style.display=currentProfile?.role==="admin"?"":"none";
+    loadMyTodayInfo();
 
     if ($("roleBadge")) {
       const role = currentProfile?.role;
@@ -1781,5 +1783,82 @@ document.querySelectorAll("[data-calendar-year]").forEach((button) => {
     }
   });
 
+
+
+  // Per-account dashboard "Today" information
+  function todayLabel(){return new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});}
+
+  async function loadMyTodayInfo(){
+    if($("todayDate")) $("todayDate").textContent=todayLabel();
+    const box=$("todayInfoContent"); if(!box||!currentUser)return;
+    try{
+      const {data,error}=await supabaseClient.rpc("get_my_today_info"); if(error)throw error;
+      const x=Array.isArray(data)?(data[0]||{}):(data||{}); box.innerHTML="";
+      const line=t=>{const d=document.createElement("div");d.className="today-info-line";d.textContent=t;box.appendChild(d);};
+      if(x.current_class){line("🟢 "+x.current_class);if(x.class_end_time)line("Ends at "+String(x.class_end_time).slice(0,5));}
+      if(x.next_class)line("Next: "+x.next_class+(x.next_room?" — "+x.next_room:""));
+      if(x.assignment_text)line("📌 "+x.assignment_text);
+      if(x.activity_text)line("🏀 "+x.activity_text);
+      try{
+        const {data:m}=await supabaseClient.rpc("get_today_lunch_menu");
+        const menu=Array.isArray(m)?(m[0]||{}):(m||{});
+        if(menu.hot_lunch||menu.cold_lunch)line("🍕 Lunch: "+[menu.hot_lunch,menu.cold_lunch].filter(Boolean).join(" / "));
+      }catch{}
+      if(!box.children.length){const s=document.createElement("span");s.className="today-muted";s.textContent="No information has been added for today.";box.appendChild(s);}
+    }catch(e){console.error(e);box.textContent="Today's information is unavailable.";}
+  }
+
+  async function loadTodayAccounts(){
+    const s=$("todayInfoAccount");if(!s)return;
+    s.innerHTML='<option value="">Select an active account...</option>';
+    try{
+      const {data,error}=await supabaseClient.rpc("get_active_accounts_for_today_info");if(error)throw error;
+      (data||[]).forEach(a=>{const o=document.createElement("option");o.value=a.user_id;o.textContent=`${a.email} (${a.role})`;s.appendChild(o);});
+    }catch(e){console.error(e);$("todayInfoMessage").textContent="Run student-today-info.sql in Supabase first.";}
+  }
+
+  async function loadTargetTodayInfo(){
+    const id=$("todayInfoAccount")?.value;if(!id)return;
+    const {data,error}=await supabaseClient.rpc("get_user_today_info_admin",{target_user_id:id});if(error){console.error(error);return;}
+    const x=Array.isArray(data)?(data[0]||{}):(data||{});
+    $("todayCurrentClass").value=x.current_class||"";$("todayEndTime").value=x.class_end_time?String(x.class_end_time).slice(0,5):"";
+    $("todayNextClass").value=x.next_class||"";$("todayNextRoom").value=x.next_room||"";
+    $("todayAssignments").value=x.assignment_text||"";$("todayActivity").value=x.activity_text||"";
+  }
+
+  async function saveTargetTodayInfo(){
+    const id=$("todayInfoAccount")?.value;if(!id){alert("Select an active account first.");return;}
+    try{
+      const {error}=await supabaseClient.rpc("set_user_today_info_admin",{
+        target_user_id:id,new_current_class:$("todayCurrentClass").value.trim()||null,
+        new_class_end_time:$("todayEndTime").value||null,new_next_class:$("todayNextClass").value.trim()||null,
+        new_next_room:$("todayNextRoom").value.trim()||null,new_assignment_text:$("todayAssignments").value.trim()||null,
+        new_activity_text:$("todayActivity").value.trim()||null
+      });if(error)throw error;
+      $("todayInfoMessage").textContent="Saved successfully.";
+      if(id===currentUser?.id)await loadMyTodayInfo();
+    }catch(e){console.error(e);alert("Could not save. Run student-today-info.sql in Supabase.");}
+  }
+
+  async function clearTargetTodayInfo(){
+    const id=$("todayInfoAccount")?.value;if(!id){alert("Select an active account first.");return;}
+    if(!confirm("Clear today's information for this account?"))return;
+    const {error}=await supabaseClient.rpc("clear_user_today_info_admin",{target_user_id:id});
+    if(error){console.error(error);alert("Could not clear info.");return;}
+    await loadTargetTodayInfo();$("todayInfoMessage").textContent="Today's info was cleared.";
+    if(id===currentUser?.id)await loadMyTodayInfo();
+  }
+
+  function switchTodaySection(){
+    const v=$("todayInfoSection")?.value;
+    document.querySelectorAll("[data-today-section]").forEach(x=>x.style.display=x.dataset.todaySection===v?"grid":"none");
+  }
+
+  $("openTodayInfoAdmin")?.addEventListener("click",async()=>{if(currentProfile?.role!=="admin")return;setLunchModal($("todayInfoAdminModal"),true);await loadTodayAccounts();});
+  $("closeTodayInfoAdmin")?.addEventListener("click",()=>setLunchModal($("todayInfoAdminModal"),false));
+  $("todayInfoAccount")?.addEventListener("change",loadTargetTodayInfo);
+  $("todayInfoSection")?.addEventListener("change",switchTodaySection);
+  $("saveTodayInfo")?.addEventListener("click",saveTargetTodayInfo);
+  $("clearTodayInfo")?.addEventListener("click",clearTargetTodayInfo);
 
 })();
